@@ -3654,8 +3654,18 @@ mod tests {
     }
 
     fn fresh_paths(tmp: &TempDir) -> CcteamPaths {
+        // macOS caps `sockaddr_un::sun_path` at 104 bytes; `temp_dir()` on
+        // macOS is a long /var/folders/.../T/ path, so a daemon socket
+        // bound under `root` fails with EINVAL on Apple hosts. Anchor the
+        // test root at a short /tmp prefix, unique per TempDir via its
+        // random file name (same fix family as codex_app_server_test).
+        let root = std::path::PathBuf::from("/tmp").join(format!(
+            "ccteam-test-{}",
+            tmp.path().file_name().unwrap().to_string_lossy()
+        ));
+        std::fs::create_dir_all(&root).unwrap();
         CcteamPaths {
-            root: tmp.path().join("home"),
+            root,
             projects_root: tmp.path().join("projects"),
         }
     }

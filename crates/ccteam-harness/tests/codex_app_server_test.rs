@@ -22,12 +22,16 @@ use tempfile::TempDir;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::net::UnixListener;
 
-/// Bind a unique UDS socket under /tmp and return its path. Each test
-/// gets its own so they can run in parallel without trampling on each
-/// other's `APP_SERVER_SOCKET_ENV` override.
+/// Bind a unique UDS socket under a short fixed prefix and return its path.
+/// Each test gets its own so they can run in parallel without trampling on
+/// each other's `APP_SERVER_SOCKET_ENV` override.
+///
+/// macOS `sockaddr_un::sun_path` caps at 104 bytes; `temp_dir()` on macOS
+/// resolves to a long `/var/folders/.../T/` path, so a socket bound there
+/// fails with EINVAL on Apple hosts. Use `/tmp` (fixed 5 bytes) instead.
 fn unique_socket_path(tag: &str) -> PathBuf {
-    let p = std::env::temp_dir().join(format!(
-        "ccteam-wave3-codex-app-server-{tag}-{}.sock",
+    let p = PathBuf::from("/tmp").join(format!(
+        "ccteam-codex-app-server-{tag}-{}.sock",
         std::process::id()
     ));
     let _ = std::fs::remove_file(&p);

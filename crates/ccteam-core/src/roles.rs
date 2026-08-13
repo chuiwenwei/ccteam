@@ -599,7 +599,12 @@ mod tests {
     #[test]
     fn list_library_skills_is_recursive_hidden_safe_and_sorted() {
         let tmp = tempfile::TempDir::new().unwrap();
-        let ccteam_root = tmp.path().join("home");
+        // `list_library_skills` canonicalizes its root (on macOS this
+        // resolves the /var → /private/var symlink). Build the expected
+        // paths from the canonicalized temp root so literal assertions
+        // match on every host; production canonicalize behavior is untouched.
+        let tmp_root = std::fs::canonicalize(tmp.path()).unwrap();
+        let ccteam_root = tmp_root.join("home");
         let root = ccteam_root.join("skills");
         for dir in [
             "zeta",
