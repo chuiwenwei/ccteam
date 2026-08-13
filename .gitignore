@@ -26,6 +26,8 @@ readme.local.txt
 # docs/v0-6-0/demos/ when V0.6.1 records them.
 .probe-results/
 .ccteam
+# Reasonix desktop client local state (topic title cache) — tool artifact, not repo content.
+.reasonix
 .codegraph
 
 # Claude Telegram (added by claude-telegram-workspace/install.sh)
